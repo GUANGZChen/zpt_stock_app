@@ -1,7 +1,8 @@
 import time
+from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
-import yfinance as yf
+import requests
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -182,6 +183,87 @@ def make_chart(df, ticker, interval, touch_zero_band):
     return fig
 
 
+def _to_twelvedata_interval(interval):
+    mapping = {
+        "1m": "1min",
+        "2m": "2min",
+        "5m": "5min",
+        "15m": "15min",
+        "30m": "30min",
+        "60m": "1h",
+        "1d": "1day",
+        "1wk": "1week",
+    }
+    return mapping.get(interval, interval)
+
+
+def _period_to_days(period):
+    if period.endswith("d"):
+        return int(period[:-1])
+    if period.endswith("mo"):
+        return int(period[:-2]) * 30
+    if period.endswith("y"):
+        return int(period[:-1]) * 365
+    if period == "max":
+        return None
+    return None
+
+
+@st.cache_data(ttl=300)
+def fetch_twelvedata(symbol, period, interval, api_key):
+    if not api_key:
+        return None, "Missing Twelve Data API key."
+
+    td_interval = _to_twelvedata_interval(interval)
+    days = _period_to_days(period)
+    end_dt = datetime.utcnow()
+    start_dt = None if days is None else (end_dt - timedelta(days=days))
+
+    params = {
+        "symbol": symbol,
+        "interval": td_interval,
+        "apikey": api_key,
+        "format": "JSON",
+    }
+    if start_dt is not None:
+        params["start_date"] = start_dt.strftime("%Y-%m-%d %H:%M:%S")
+        params["end_date"] = end_dt.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        params["outputsize"] = 5000
+
+    resp = requests.get("https://api.twelvedata.com/time_series", params=params, timeout=15)
+    if resp.status_code != 200:
+        return None, f"Twelve Data HTTP {resp.status_code}"
+
+    data = resp.json()
+    if data.get("status") == "error":
+        return None, data.get("message", "Twelve Data error")
+
+    values = data.get("values", [])
+    if not values:
+        return None, "No data returned."
+
+    df = pd.DataFrame(values)
+    df.rename(
+        columns={
+            "datetime": "Datetime",
+            "open": "Open",
+            "high": "High",
+            "low": "Low",
+            "close": "Close",
+            "volume": "Volume",
+        },
+        inplace=True,
+    )
+    df["Datetime"] = pd.to_datetime(df["Datetime"])
+    for col in ["Open", "High", "Low", "Close", "Volume"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    df = df.dropna(subset=["Open", "High", "Low", "Close"]).sort_values("Datetime")
+    df.set_index("Datetime", inplace=True)
+    return df, None
+
+
 def main():
     st.set_page_config(page_title="ZPT Stock App", layout="wide")
     st.title("ZPT Stock App")
@@ -194,6 +276,7 @@ def main():
             index=0,
         )
         interval = st.selectbox("Interval", ["1m", "2m", "5m", "15m", "30m", "60m", "1d", "1wk"], index=0)
+        api_key = st.text_input("Twelve Data API Key", type="password", help="Get one at twelvedata.com")
         touch_zero_band = st.slider("Touch Band (±%)", min_value=0.0, max_value=0.2, value=0.0, step=0.005)
         auto_refresh = st.checkbox("Auto refresh", value=False)
         refresh_sec = st.slider("Refresh (sec)", min_value=5, max_value=120, value=15, step=5)
@@ -210,8 +293,10 @@ def main():
         st.warning("Please enter a ticker.")
         return
 
-    df = yf.download(ticker, period=period, interval=interval, auto_adjust=True, progress=False)
-    df = normalize_ohlcv(df)
+    df, err = fetch_twelvedata(ticker, period, interval, api_key)
+    if err:
+        st.error(err)
+        return
 
     if df is None or df.empty:
         st.error("No data returned. Try another ticker or timeframe.")
