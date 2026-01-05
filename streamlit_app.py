@@ -262,8 +262,8 @@ def fetch_twelvedata(symbol, period, interval, api_key):
     df = df.dropna(subset=["Open", "High", "Low", "Close"]).sort_values("Datetime")
     df.set_index("Datetime", inplace=True)
 
-    # For daily interval with short periods, keep last N trading days (skip rest days).
-    if interval == "1d" and days is not None and days <= 10:
+    # For daily interval, keep last N trading days (skip rest days).
+    if interval == "1d" and days is not None:
         df = df.tail(days)
 
     return df, None
