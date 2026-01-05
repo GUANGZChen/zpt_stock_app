@@ -126,7 +126,7 @@ def make_chart(df, ticker, interval, touch_zero_band):
                 y=df["Close"].iloc[buy_idx],
                 mode="markers",
                 name="Buy",
-                marker=dict(symbol="triangle-up", size=11, color=buy_color, line=dict(width=1, color="#0b2e13")),
+                marker=dict(symbol="heart", size=12, color="#ff5fa2", line=dict(width=1, color="#8e1f4e")),
                 hovertemplate="Buy<br>Time=%{text}<br>Price=%{y:.2f}<extra></extra>",
                 text=df.index.strftime("%Y-%m-%d %H:%M").values[buy_idx],
             )
