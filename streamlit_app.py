@@ -86,10 +86,10 @@ def make_chart(df, ticker, interval, touch_zero_band):
             low=df["Low"],
             close=df["Close"],
             name="Price",
-            increasing_line_color=price_color,
-            decreasing_line_color=price_color,
-            increasing_fillcolor="rgba(205,214,244,0.25)",
-            decreasing_fillcolor="rgba(205,214,244,0.25)",
+            increasing_line_color="#2ecc71",
+            decreasing_line_color="#e74c3c",
+            increasing_fillcolor="rgba(46,204,113,0.35)",
+            decreasing_fillcolor="rgba(231,76,60,0.35)",
         )
     , row=1, col=1)
 
