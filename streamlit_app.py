@@ -139,9 +139,19 @@ def make_chart(df, ticker, interval, touch_zero_band):
                 y=df["Close"].iloc[sell_idx],
                 mode="markers",
                 name="Sell",
-                marker=dict(symbol="triangle-down", size=11, color=sell_color, line=dict(width=1, color="#3a0d0d")),
+                marker=dict(symbol="heart", size=12, color="#ffffff", line=dict(width=1, color="#999999")),
                 hovertemplate="Sell<br>Time=%{text}<br>Price=%{y:.2f}<extra></extra>",
                 text=df.index.strftime("%Y-%m-%d %H:%M").values[sell_idx],
+            )
+        , row=1, col=1)
+        fig.add_trace(
+            go.Scatter(
+                x=x[sell_idx],
+                y=df["Close"].iloc[sell_idx],
+                mode="markers",
+                name="Sell Crack",
+                marker=dict(symbol="x", size=10, color="#555555", line=dict(width=1, color="#555555")),
+                hoverinfo="skip",
             )
         , row=1, col=1)
 
