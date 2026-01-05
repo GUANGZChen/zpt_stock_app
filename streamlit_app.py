@@ -225,7 +225,11 @@ def fetch_twelvedata(symbol, period, interval, api_key):
         "apikey": api_key,
         "format": "JSON",
     }
-    if start_dt is not None:
+    if interval == "1d" and days is not None:
+        # Pull a bigger window then take last N trading days to skip rest days.
+        start_dt = None
+        params["outputsize"] = max(100, days * 5)
+    elif start_dt is not None:
         params["start_date"] = start_dt.strftime("%Y-%m-%d %H:%M:%S")
         params["end_date"] = end_dt.strftime("%Y-%m-%d %H:%M:%S")
     else:
