@@ -57,7 +57,7 @@ def compute_signals(df, touch_zero_band=0.02):
     return cross_up, cross_dn, underwater, buy_idx, sell_idx
 
 
-def make_chart(df, ticker, interval, touch_zero_band, chart_height):
+def make_chart(df, ticker, interval, touch_zero_band):
     fig = make_subplots(
         rows=2,
         cols=1,
@@ -189,7 +189,7 @@ def make_chart(df, ticker, interval, touch_zero_band, chart_height):
     fig.update_layout(
         title=f"{ticker} | {interval} | touch_band={touch_zero_band:.3f}",
         xaxis_rangeslider_visible=False,
-        height=chart_height,
+        height=950,
         template="plotly_dark",
         hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
@@ -331,16 +331,6 @@ def latest_trade_date(symbol, api_key):
 def main():
     st.set_page_config(page_title="ZPT Stock App", layout="wide")
     st.title("ZPT Stock App")
-    st.markdown(
-        """
-<style>
-@media (max-width: 768px) {
-  .block-container { padding: 1rem 0.6rem; }
-}
-</style>
-""",
-        unsafe_allow_html=True,
-    )
 
     with st.sidebar:
         ticker = st.text_input("Ticker", value="AAPL")
@@ -351,7 +341,6 @@ def main():
             "Date range",
             value=(default_date, default_date),
         )
-        compact = st.checkbox("Compact layout", value=False)
         auto_macd = st.checkbox("Auto MACD range", value=True)
         macd_range = st.slider("MACD range (abs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
         touch_zero_band = st.slider("Touch Band (±%)", min_value=0.0, max_value=0.2, value=0.0, step=0.005)
@@ -393,8 +382,7 @@ def main():
 
     df = add_ma(df)
     df = add_macd(df)
-    chart_height = 700 if compact else 950
-    fig = make_chart(df, ticker, interval, touch_zero_band, chart_height)
+    fig = make_chart(df, ticker, interval, touch_zero_band)
     if not auto_macd:
         fig.update_yaxes(range=[-macd_range, macd_range], row=2, col=1)
     st.plotly_chart(
