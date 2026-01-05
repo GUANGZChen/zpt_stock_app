@@ -220,7 +220,7 @@ def _period_to_days(period):
 
 
 @st.cache_data(ttl=120)
-def fetch_twelvedata(symbol, period, interval, api_key):
+def fetch_twelvedata(symbol, period, interval, api_key, start_date=None, end_date=None):
     if not api_key:
         return None, "Missing Twelve Data API key."
 
@@ -235,7 +235,10 @@ def fetch_twelvedata(symbol, period, interval, api_key):
         "apikey": api_key,
         "format": "JSON",
     }
-    if interval == "1d" and days is not None:
+    if start_date and end_date:
+        params["start_date"] = start_date.strftime("%Y-%m-%d %H:%M:%S")
+        params["end_date"] = end_date.strftime("%Y-%m-%d %H:%M:%S")
+    elif interval == "1d" and days is not None:
         # Pull a bigger window then take last N trading days to skip rest days.
         start_dt = None
         params["outputsize"] = max(200, days * 5)
@@ -277,7 +280,7 @@ def fetch_twelvedata(symbol, period, interval, api_key):
     df.set_index("Datetime", inplace=True)
 
     # For daily interval, keep last N trading days (skip rest days).
-    if interval == "1d" and days is not None:
+    if interval == "1d" and days is not None and not (start_date and end_date):
         df = df.tail(days)
 
     return df, None
@@ -295,6 +298,10 @@ def main():
             index=0,
         )
         interval = st.selectbox("Interval", ["1m", "2m", "5m", "15m", "30m", "60m", "1d", "1wk"], index=0)
+        date_range = st.date_input(
+            "Date range",
+            value=(datetime.utcnow().date() - timedelta(days=30), datetime.utcnow().date()),
+        )
         touch_zero_band = st.slider("Touch Band (±%)", min_value=0.0, max_value=0.2, value=0.0, step=0.005)
         auto_refresh = st.checkbox("Auto refresh", value=False)
         refresh_sec = st.slider("Refresh (sec)", min_value=5, max_value=120, value=15, step=5)
@@ -318,7 +325,13 @@ def main():
         st.error("Missing TWELVE_DATA_API_KEY in Streamlit Secrets.")
         return
 
-    df, err = fetch_twelvedata(ticker, period, interval, api_key)
+    start_date = None
+    end_date = None
+    if isinstance(date_range, tuple) and len(date_range) == 2:
+        start_date = datetime.combine(date_range[0], datetime.min.time())
+        end_date = datetime.combine(date_range[1], datetime.max.time())
+
+    df, err = fetch_twelvedata(ticker, period, interval, api_key, start_date=start_date, end_date=end_date)
     if err:
         st.error(err)
         return
