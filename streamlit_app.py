@@ -193,7 +193,9 @@ def make_chart(df, ticker, interval, touch_zero_band):
     fig.update_xaxes(showgrid=False, row=1, col=1)
     fig.update_yaxes(title_text="Price", row=1, col=1, gridcolor="rgba(255,255,255,0.08)")
     max_hist = float(np.nanmax(np.abs(hist.values))) if len(hist) else 0.0
-    max_hist = max(max_hist, 1e-6)
+    price_scale = float(pd.to_numeric(df["Close"], errors="coerce").mean()) if len(df) else 0.0
+    min_range = max(price_scale * 0.0005, 0.01)
+    max_hist = max(max_hist, min_range)
     fig.update_yaxes(
         title_text="MACD",
         row=2,
