@@ -201,9 +201,21 @@ def make_chart(df, ticker, interval, touch_zero_band):
     fig.update_xaxes(showgrid=False, row=1, col=1)
     fig.update_yaxes(title_text="Price", row=1, col=1, gridcolor="rgba(255,255,255,0.08)")
     max_hist = float(np.nanmax(np.abs(hist.values))) if len(hist) else 0.0
+    max_line = float(
+        np.nanmax(
+            np.abs(
+                pd.concat(
+                    [
+                        pd.to_numeric(df["DIF"], errors="coerce"),
+                        pd.to_numeric(df["DEA"], errors="coerce"),
+                    ]
+                ).values
+            )
+        )
+    )
     price_scale = float(pd.to_numeric(df["Close"], errors="coerce").mean()) if len(df) else 0.0
     min_range = max(price_scale * 0.0005, 0.01)
-    max_hist = max(max_hist, min_range)
+    max_hist = max(max_hist, max_line, min_range)
     fig.update_yaxes(
         title_text="MACD",
         row=2,
@@ -324,6 +336,8 @@ def main():
             "Date range",
             value=(datetime.utcnow().date() - timedelta(days=30), datetime.utcnow().date()),
         )
+        auto_macd = st.checkbox("Auto MACD range", value=True)
+        macd_range = st.slider("MACD range (abs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
         touch_zero_band = st.slider("Touch Band (±%)", min_value=0.0, max_value=0.2, value=0.0, step=0.005)
         auto_refresh = st.checkbox("Auto refresh", value=False)
         refresh_sec = st.slider("Refresh (sec)", min_value=5, max_value=120, value=15, step=5)
@@ -365,6 +379,8 @@ def main():
     df = add_ma(df)
     df = add_macd(df)
     fig = make_chart(df, ticker, interval, touch_zero_band)
+    if not auto_macd:
+        fig.update_yaxes(range=[-macd_range, macd_range], row=2, col=1)
     st.plotly_chart(
         fig,
         use_container_width=True,
