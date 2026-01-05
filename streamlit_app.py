@@ -326,15 +326,10 @@ def main():
 
     with st.sidebar:
         ticker = st.text_input("Ticker", value="AAPL")
-        period = st.selectbox(
-            "Period",
-            ["1d", "2d", "3d", "4d", "5d", "10d", "1mo", "3mo", "6mo", "1y", "2y", "max"],
-            index=0,
-        )
         interval = st.selectbox("Interval", ["1m", "2m", "5m", "15m", "30m", "60m", "1d", "1wk"], index=0)
         date_range = st.date_input(
             "Date range",
-            value=(datetime.utcnow().date() - timedelta(days=30), datetime.utcnow().date()),
+            value=(datetime.utcnow().date(), datetime.utcnow().date()),
         )
         auto_macd = st.checkbox("Auto MACD range", value=True)
         macd_range = st.slider("MACD range (abs)", min_value=0.01, max_value=5.0, value=0.5, step=0.01)
@@ -367,7 +362,7 @@ def main():
         start_date = datetime.combine(date_range[0], datetime.min.time())
         end_date = datetime.combine(date_range[1], datetime.max.time())
 
-    df, err = fetch_twelvedata(ticker, period, interval, api_key, start_date=start_date, end_date=end_date)
+    df, err = fetch_twelvedata(ticker, "custom", interval, api_key, start_date=start_date, end_date=end_date)
     if err:
         st.error(err)
         return
