@@ -159,9 +159,15 @@ def make_chart(df, ticker, interval, touch_zero_band):
         , row=1, col=1)
 
     hist = pd.to_numeric(df["MACD_hist"], errors="coerce").fillna(0.0)
-    hist_colors = np.where(hist >= 0, hist_pos, hist_neg)
+    hist_pos_vals = hist.where(hist >= 0, 0.0)
+    hist_neg_vals = hist.where(hist < 0, 0.0)
     fig.add_trace(
-        go.Bar(x=x, y=hist, name="Hist", marker_color=hist_colors, opacity=0.85),
+        go.Bar(x=x, y=hist_pos_vals, name="Hist+", marker_color=hist_pos, opacity=0.9),
+        row=2,
+        col=1,
+    )
+    fig.add_trace(
+        go.Bar(x=x, y=hist_neg_vals, name="Hist-", marker_color=hist_neg, opacity=0.9),
         row=2,
         col=1,
     )
@@ -188,6 +194,8 @@ def make_chart(df, ticker, interval, touch_zero_band):
         hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=60, r=30, t=80, b=40),
+        barmode="relative",
+        bargap=0.05,
     )
     fig.update_xaxes(tickmode="array", tickvals=tickvals, ticktext=ticktext, showgrid=False, row=2, col=1)
     fig.update_xaxes(showgrid=False, row=1, col=1)
