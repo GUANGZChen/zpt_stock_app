@@ -158,9 +158,10 @@ def make_chart(df, ticker, interval, touch_zero_band):
             )
         , row=1, col=1)
 
-    hist_colors = np.where(df["MACD_hist"] >= 0, hist_pos, hist_neg)
+    hist = pd.to_numeric(df["MACD_hist"], errors="coerce").fillna(0.0)
+    hist_colors = np.where(hist >= 0, hist_pos, hist_neg)
     fig.add_trace(
-        go.Bar(x=x, y=df["MACD_hist"], name="Hist", marker_color=hist_colors),
+        go.Bar(x=x, y=hist, name="Hist", marker_color=hist_colors, opacity=0.85),
         row=2,
         col=1,
     )
@@ -191,7 +192,15 @@ def make_chart(df, ticker, interval, touch_zero_band):
     fig.update_xaxes(tickmode="array", tickvals=tickvals, ticktext=ticktext, showgrid=False, row=2, col=1)
     fig.update_xaxes(showgrid=False, row=1, col=1)
     fig.update_yaxes(title_text="Price", row=1, col=1, gridcolor="rgba(255,255,255,0.08)")
-    fig.update_yaxes(title_text="MACD", row=2, col=1, gridcolor="rgba(255,255,255,0.08)")
+    max_hist = float(np.nanmax(np.abs(hist.values))) if len(hist) else 0.0
+    max_hist = max(max_hist, 1e-6)
+    fig.update_yaxes(
+        title_text="MACD",
+        row=2,
+        col=1,
+        gridcolor="rgba(255,255,255,0.08)",
+        range=[-max_hist * 1.2, max_hist * 1.2],
+    )
 
     return fig
 
