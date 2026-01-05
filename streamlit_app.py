@@ -197,8 +197,29 @@ def make_chart(df, ticker, interval, touch_zero_band):
         barmode="relative",
         bargap=0.05,
     )
-    fig.update_xaxes(tickmode="array", tickvals=tickvals, ticktext=ticktext, showgrid=False, row=2, col=1)
-    fig.update_xaxes(showgrid=False, row=1, col=1)
+    fig.update_xaxes(
+        tickmode="array",
+        tickvals=tickvals,
+        ticktext=ticktext,
+        showgrid=False,
+        showspikes=True,
+        spikemode="across",
+        spikesnap="cursor",
+        spikethickness=1,
+        spikecolor="rgba(255,255,255,0.4)",
+        row=2,
+        col=1,
+    )
+    fig.update_xaxes(
+        showgrid=False,
+        showspikes=True,
+        spikemode="across",
+        spikesnap="cursor",
+        spikethickness=1,
+        spikecolor="rgba(255,255,255,0.4)",
+        row=1,
+        col=1,
+    )
     fig.update_yaxes(title_text="Price", row=1, col=1, gridcolor="rgba(255,255,255,0.08)")
     max_hist = float(np.nanmax(np.abs(hist.values))) if len(hist) else 0.0
     max_line = float(
