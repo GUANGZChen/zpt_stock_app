@@ -130,7 +130,6 @@ def make_chart(df, ticker, interval, touch_zero_band):
                 textfont=dict(color="#ff5fa2", size=16),
                 hovertemplate="Buy<br>Time=%{customdata}<br>Price=%{y:.2f}<extra></extra>",
                 customdata=df.index.strftime("%Y-%m-%d %H:%M").values[buy_idx],
-                text=df.index.strftime("%Y-%m-%d %H:%M").values[buy_idx],
             )
         , row=1, col=1)
 
@@ -145,7 +144,6 @@ def make_chart(df, ticker, interval, touch_zero_band):
                 textfont=dict(color="#ffffff", size=16),
                 hovertemplate="Sell<br>Time=%{customdata}<br>Price=%{y:.2f}<extra></extra>",
                 customdata=df.index.strftime("%Y-%m-%d %H:%M").values[sell_idx],
-                text=df.index.strftime("%Y-%m-%d %H:%M").values[sell_idx],
             )
         , row=1, col=1)
         fig.add_trace(
