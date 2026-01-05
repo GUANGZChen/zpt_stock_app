@@ -219,7 +219,7 @@ def _period_to_days(period):
     return None
 
 
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=120)
 def fetch_twelvedata(symbol, period, interval, api_key):
     if not api_key:
         return None, "Missing Twelve Data API key."
@@ -238,7 +238,7 @@ def fetch_twelvedata(symbol, period, interval, api_key):
     if interval == "1d" and days is not None:
         # Pull a bigger window then take last N trading days to skip rest days.
         start_dt = None
-        params["outputsize"] = max(100, days * 5)
+        params["outputsize"] = max(200, days * 5)
     elif start_dt is not None:
         params["start_date"] = start_dt.strftime("%Y-%m-%d %H:%M:%S")
         params["end_date"] = end_dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -298,6 +298,8 @@ def main():
         touch_zero_band = st.slider("Touch Band (±%)", min_value=0.0, max_value=0.2, value=0.0, step=0.005)
         auto_refresh = st.checkbox("Auto refresh", value=False)
         refresh_sec = st.slider("Refresh (sec)", min_value=5, max_value=120, value=15, step=5)
+        if st.button("Refresh data"):
+            st.cache_data.clear()
 
     if auto_refresh:
         st_autorefresh = getattr(st, "autorefresh", None)
