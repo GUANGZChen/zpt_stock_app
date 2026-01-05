@@ -179,12 +179,28 @@ def make_chart(df, ticker, interval, touch_zero_band):
         col=1,
     )
     fig.add_trace(
-        go.Scatter(x=x, y=df["DIF"], mode="lines", name="DIF", line=dict(color=dif_color, width=1.6)),
+        go.Scatter(
+            x=x,
+            y=df["DIF"],
+            mode="lines",
+            name="DIF",
+            line=dict(color=dif_color, width=1.6),
+            customdata=df["Close"].values,
+            hovertemplate="DIF=%{y:.4f}<br>Close=%{customdata:.2f}<extra></extra>",
+        ),
         row=2,
         col=1,
     )
     fig.add_trace(
-        go.Scatter(x=x, y=df["DEA"], mode="lines", name="DEA", line=dict(color=dea_color, width=1.6, dash="dot")),
+        go.Scatter(
+            x=x,
+            y=df["DEA"],
+            mode="lines",
+            name="DEA",
+            line=dict(color=dea_color, width=1.6, dash="dot"),
+            customdata=df["Close"].values,
+            hovertemplate="DEA=%{y:.4f}<br>Close=%{customdata:.2f}<extra></extra>",
+        ),
         row=2,
         col=1,
     )
