@@ -261,6 +261,11 @@ def fetch_twelvedata(symbol, period, interval, api_key):
             df[col] = pd.to_numeric(df[col], errors="coerce")
     df = df.dropna(subset=["Open", "High", "Low", "Close"]).sort_values("Datetime")
     df.set_index("Datetime", inplace=True)
+
+    # For daily interval with short periods, keep last N trading days (skip rest days).
+    if interval == "1d" and days is not None and days <= 10:
+        df = df.tail(days)
+
     return df, None
 
 
@@ -276,7 +281,6 @@ def main():
             index=0,
         )
         interval = st.selectbox("Interval", ["1m", "2m", "5m", "15m", "30m", "60m", "1d", "1wk"], index=0)
-        api_key = st.text_input("Twelve Data API Key", type="password", help="Get one at twelvedata.com")
         touch_zero_band = st.slider("Touch Band (±%)", min_value=0.0, max_value=0.2, value=0.0, step=0.005)
         auto_refresh = st.checkbox("Auto refresh", value=False)
         refresh_sec = st.slider("Refresh (sec)", min_value=5, max_value=120, value=15, step=5)
@@ -291,6 +295,11 @@ def main():
 
     if not ticker:
         st.warning("Please enter a ticker.")
+        return
+
+    api_key = st.secrets.get("TWELVE_DATA_API_KEY") if "TWELVE_DATA_API_KEY" in st.secrets else None
+    if not api_key:
+        st.error("Missing TWELVE_DATA_API_KEY in Streamlit Secrets.")
         return
 
     df, err = fetch_twelvedata(ticker, period, interval, api_key)
