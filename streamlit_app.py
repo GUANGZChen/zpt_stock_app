@@ -124,10 +124,12 @@ def make_chart(df, ticker, interval, touch_zero_band):
             go.Scatter(
                 x=x[buy_idx],
                 y=df["Close"].iloc[buy_idx],
-                mode="markers",
+                mode="text",
                 name="Buy",
-                marker=dict(symbol="heart", size=12, color="#ff5fa2", line=dict(width=1, color="#8e1f4e")),
-                hovertemplate="Buy<br>Time=%{text}<br>Price=%{y:.2f}<extra></extra>",
+                text=["💗"] * len(buy_idx),
+                textfont=dict(color="#ff5fa2", size=16),
+                hovertemplate="Buy<br>Time=%{customdata}<br>Price=%{y:.2f}<extra></extra>",
+                customdata=df.index.strftime("%Y-%m-%d %H:%M").values[buy_idx],
                 text=df.index.strftime("%Y-%m-%d %H:%M").values[buy_idx],
             )
         , row=1, col=1)
@@ -137,10 +139,12 @@ def make_chart(df, ticker, interval, touch_zero_band):
             go.Scatter(
                 x=x[sell_idx],
                 y=df["Close"].iloc[sell_idx],
-                mode="markers",
+                mode="text",
                 name="Sell",
-                marker=dict(symbol="heart", size=12, color="#ffffff", line=dict(width=1, color="#999999")),
-                hovertemplate="Sell<br>Time=%{text}<br>Price=%{y:.2f}<extra></extra>",
+                text=["♡"] * len(sell_idx),
+                textfont=dict(color="#ffffff", size=16),
+                hovertemplate="Sell<br>Time=%{customdata}<br>Price=%{y:.2f}<extra></extra>",
+                customdata=df.index.strftime("%Y-%m-%d %H:%M").values[sell_idx],
                 text=df.index.strftime("%Y-%m-%d %H:%M").values[sell_idx],
             )
         , row=1, col=1)
@@ -148,9 +152,10 @@ def make_chart(df, ticker, interval, touch_zero_band):
             go.Scatter(
                 x=x[sell_idx],
                 y=df["Close"].iloc[sell_idx],
-                mode="markers",
+                mode="text",
                 name="Sell Crack",
-                marker=dict(symbol="x", size=10, color="#555555", line=dict(width=1, color="#555555")),
+                text=["✕"] * len(sell_idx),
+                textfont=dict(color="#777777", size=12),
                 hoverinfo="skip",
             )
         , row=1, col=1)
